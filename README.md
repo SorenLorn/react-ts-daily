@@ -76,3 +76,82 @@ return (
 ## ✅ 代码跳转链接
 
 [练习代码源码](./day03-components/ComponentDemo.tsx)
+
+
+``
+# day05 useState 状态
+## 知识点
+useState 是React最基础的Hook，作用：**给函数组件添加响应式数据**。
+当state的值发生变化，组件自动重新渲染页面。
+
+### 1.基础语法
+```tsx
+// 变量，修改变量的函数 = useState(初始值)
+const [变量名, set变量名] = useState<类型>(初始值)
+```
+
+- 第一个返回值：状态变量，读取数据
+- 第二个返回值：更新函数，**唯一能修改 state 的方法**
+- useState <类型>：TS 类型约束，规范数据类型
+
+> 
+> ❌ 错误：直接赋值修改 state
+> count = count +1  不会触发页面更新！
+
+> 
+> ✅ 正确：调用 setCount 修改
+
+```
+// 写法1：直接传新值
+setCount(10)
+
+// 写法2：函数式更新（推荐，依赖上一次状态）
+setCount(prev => prev +1)
+```
+
+### 2. 不同数据类型使用
+
+1. 简单类型：string /number/boolean
+
+```
+const [name, setName] = useState<string>('')
+```
+
+2. 对象类型
+⚠️ 不能直接修改原对象，必须**展开拷贝生成新对象**
+
+```
+type User = {name:string,age:number}
+const [user, setUser] = useState<User>({name:'tom',age:20})
+// 修改
+setUser(prev=>({...prev, age: prev.age+1}))
+```
+
+3. 数组类型
+⚠️ 不能用 push/pop 直接修改原数组，生成新数组
+
+```
+const [list, setList] = useState<string[]>([])
+// 添加
+setList(prev=>[...prev, '新元素'])
+```
+
+### 3. 表单双向绑定
+
+input value 绑定 state，onChange 事件更新 state
+
+```
+const [val, setVal] = useState('')
+<input value={val} onChange={(e)=>setVal(e.target.value)} />
+```
+
+## 常见坑总结
+
+1. state 是**只读**，不能直接修改，只能用 set 函数
+2. 对象 / 数组：必须返回新引用，旧引用不会触发渲染
+3. 异步更新：setState 是异步，修改后不能立刻拿到最新值
+4. 初始值只在组件首次渲染生效，后续修改不会重复执行
+
+## 练习文件跳转
+
+[UseStateDemo.tsx](./day05-useState/index.tsx)
