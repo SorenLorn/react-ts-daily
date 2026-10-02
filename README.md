@@ -155,3 +155,105 @@ const [val, setVal] = useState('')
 ## 练习文件跳转
 
 [UseStateDemo.tsx](./day05-useState/index.tsx)
+
+
+# day06 useEffect 副作用钩子
+
+### 一、什么是 useEffect
+
+`useEffect` 是 React 内置 Hook，用来处理**副作用**。
+副作用：组件渲染之外要做的事情，比如定时器、网络请求、监听 DOM、订阅事件。
+函数组件主体内只写渲染相关代码，副作用统一放到 useEffect。
+
+语法：
+
+```
+useEffect(()=>{
+  // 执行的副作用代码
+  return ()=>{
+    // 清理函数（可选）
+  }
+}, [依赖数组])
+```
+
+### 二、依赖数组 3 种写法（重点）
+
+1. **空数组 []**
+只在组件**首次挂载**执行一次，组件卸载时执行清理函数。
+
+```
+useEffect(()=>{
+  // 挂载执行
+  return ()=>{/*卸载清理*/}
+},[])
+```
+
+适用：只需要一次的逻辑，如页面初始化请求、一次性定时器。
+
+2. **带依赖 [state1,state2]**
+依赖数组里面的值**发生变化**，effect 就重新执行。
+
+```
+useEffect(()=>{
+  console.log('userId变了就执行');
+},[userId])
+```
+
+> 
+> 注意：用到的 state、变量，必须写到依赖数组，否则会出现旧值 bug。
+
+3. **不写第二个参数（无依赖数组）**
+组件**每一次渲染更新**都会执行 effect，性能差，尽量避免。
+
+```
+useEffect(()=>{
+  console.log('每次渲染执行');
+})
+```
+
+### 三、清理函数 return
+
+在 effect 里面 return 一个函数，就是清理函数。
+触发时机：
+
+1. 组件卸载的时候执行
+2. effect 将要重新执行前，先执行上一次的清理
+作用：清除定时器、取消事件监听、终止请求，**防止内存泄漏**
+
+```
+useEffect(()=>{
+  const timer = setInterval(()=>{},1000)
+  // 清理
+  return ()=> clearInterval(timer)
+},[])
+```
+
+### 四、useEffect 执行顺序
+
+1. 组件渲染生成 DOM
+2. DOM 渲染到页面后，**再执行 useEffect**（异步）
+
+> 
+> 和 class 组件生命周期对比：
+> 挂载：componentDidMount
+> 更新：componentDidUpdate
+> 卸载：componentWillUnmount
+> useEffect 一个 Hook 就可以覆盖这三个生命周期的能力
+
+### 五、常见踩坑
+
+1. ❌ 依赖漏写：effect 内部使用的变量不放进依赖数组，拿到永远是旧数据
+2. ❌ 忘记清理定时器 / 事件监听，页面销毁后代码继续运行，内存泄漏
+3. ❌ 在 useEffect 里面直接写无限循环 setState，造成死循环
+4. ❌ useEffect 是异步，不能阻塞页面渲染
+
+### 六、使用场景汇总
+
+- 页面加载后发起网络请求获取数据
+- 设置定时器、延时器
+- 绑定 / 解绑 window、dom 事件监听
+- 订阅消息、websocket 连接
+
+---
+
+代码跳转链接：[day06-useEffect.jsx](./index.tsx)
