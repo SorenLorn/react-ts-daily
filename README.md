@@ -257,3 +257,71 @@ useEffect(()=>{
 ---
 
 代码跳转链接：[day06-useEffect.jsx](./index.tsx)
+
+
+# Day07 useRef
+
+> 
+> 学习主题：useRef 两种核心用法（React18 主流写法，现代 React 推荐）
+
+### ✅ 知识点 1：useRef 是什么
+
+`useRef` 可以创建一个**ref 对象**，对象有 `.current` 属性。
+特点：
+
+1. ref 里的值**修改不会触发组件重新渲染**（和 useState 最大区别）
+2. ref 对象在组件整个生命周期保持**同一个引用**，不会重复创建
+3. 两大用途：① 获取 DOM 元素；② 保存不需要渲染更新的可变数据
+
+```
+// 基础语法
+const myRef = useRef<类型>(初始值)
+```
+
+### ✅ 知识点 2：获取原生 DOM 元素（最常用）
+
+- 将 `ref={xxxRef}` 绑定到 JSX 标签
+- TS 必须写类型，`useRef<HTMLInputElement>(null)`
+- 访问 DOM 时，使用可选链 `?.current` 防止 null 报错
+
+```
+const inputRef = useRef<HTMLInputElement>(null)
+// 访问DOM
+inputRef.current?.focus()
+```
+
+> 
+> 注意：**不要直接修改 DOM 的属性**，React 优先使用状态驱动视图，useRef 只用来做读取、聚焦、滚动这类操作，不要手动改 innerHTML、style。
+
+### ✅ 知识点 3：存储可变数据（前沿实战高频用法）
+
+适合存放：定时器 id、请求控制器、上一轮 state 值、第三方实例
+
+> 
+> 重点：ref 改变，页面不会刷新！
+
+```
+// 保存定时器
+const timerRef = useRef<number|null>(null)
+timerRef.current = setInterval(()=>{},1000)
+clearInterval(timerRef.current)
+```
+
+对比 useState：useState 更新会重渲染页面；ref 适合放后台变量，不需要 UI 更新。
+
+### ✅ 知识点 4：获取上一次 state 的值（面试高频）
+
+利用 useEffect 每次执行把 state 存入 ref，就能拿到上次的值
+
+```
+const prevCountRef = useRef(0)
+useEffect(()=>{
+  prevCountRef.current = count
+},[count])
+```
+
+### ❗常见踩坑
+
+1. 不要在渲染阶段直接读写 ref.current，容易出现时序 bug，放 useEffect / 事件回调里
+2. TS 绑定 DOM 时，初始值必须填`null`，类型要写对应 DOM 类型 HTMLInputElement / HTMLDivElement
+3. ref 的值更新**页面不会自动刷新**，如果页面需要显示变化，要用 useState
