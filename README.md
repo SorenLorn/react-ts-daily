@@ -403,3 +403,70 @@ export default Demo
 1. ❌ 不要直接修改 state，例如`state.count++`，不会触发页面更新
 2. ❌ reducer 内部不能写异步代码，异步请求写在 useEffect 里，请求完成再 dispatch
 3. ✅ 类型约束（TS）：一定要定义 State、Action 类型，避免类型错误
+
+
+# Day09 useContext 跨组件共享状态
+
+> 
+> 学习目标：useContext 用于**跨层级组件传值**，解决 props 层层透传（props drilling）问题，是 React 全局状态基础方案，搭配自定义 Hook 是现在主流前沿写法。
+
+### 基础语法
+
+```
+// 创建上下文
+const MyContext = createContext<类型 | undefined>(undefined)
+// 在父层用Provider包裹，传入value
+<MyContext.Provider value={共享数据}>
+  子组件
+</MyContext.Provider>
+// 子组件读取
+const data = useContext(MyContext)
+```
+
+### 核心概念
+
+1. **Props 层层透传问题**
+多层嵌套组件，数据需要从最外层一层一层传给深层子组件，中间组件不需要这个数据，只是单纯转发，代码冗余。useContext 可以直接跨层级拿到数据。
+2. Provider`Context.Provider` 是数据提供者，value 里面放要共享的状态和方法。所有包裹在里面的子组件都可以读取。
+3. 自定义 Hook 封装（推荐前沿写法）
+
+```
+const useTheme = () => {
+  const ctx = useContext(ThemeContext)
+  if(!ctx) throw new Error('必须在Provider内使用')
+  return ctx
+}
+```
+
+好处：不用每次组件都导入 ThemeContext，自带报错校验，代码复用性更强。
+
+### useContext 适用场景
+
+✅ 主题切换（深色 / 浅色模式，本次 demo）
+✅ 全局用户登录信息
+✅ 多语言切换
+⚠️ 注意：context 更新时，所有消费这个 context 的组件都会重渲染，复杂场景搭配 useMemo 优化。
+
+### 踩坑笔记
+
+1. ❌ useContext 必须放在 Provider 包裹的组件内部使用，外部调用直接报错
+2. ❌ Context 不适合存放高频频繁变化的超大状态，会造成大量组件重复渲染
+3. ✅ TS 一定要定义 Context 类型，增加类型安全，避免 any
+
+### 最小简化示例
+
+```
+import {createContext,useContext,useState} from 'react'
+type CountCtxType = {count:number}
+const CountCtx = createContext<CountCtxType|undefined>(undefined)
+function Parent(){
+  const [count,setCount] = useState(0)
+  return <CountCtx.Provider value={{count}}>
+    <Child/>
+  </CountCtx.Provider>
+}
+function Child(){
+  const ctx = useContext(CountCtx)
+  return <p>{ctx?.count}</p>
+}
+```
