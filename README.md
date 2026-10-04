@@ -325,3 +325,81 @@ useEffect(()=>{
 1. 不要在渲染阶段直接读写 ref.current，容易出现时序 bug，放 useEffect / 事件回调里
 2. TS 绑定 DOM 时，初始值必须填`null`，类型要写对应 DOM 类型 HTMLInputElement / HTMLDivElement
 3. ref 的值更新**页面不会自动刷新**，如果页面需要显示变化，要用 useState
+
+
+# Day08 useReducer 状态管理
+
+> 
+> 学习目标：useReducer 是 React 内置 Hooks，适合**多个关联状态、复杂状态逻辑**，是 Redux 思想的简化版，属于 React 基础进阶前沿写法，适合处理批量状态修改。
+
+### 基础语法
+
+```
+const [state, dispatch] = useReducer(reducer, initialState)
+/*
+state：当前状态，和useState返回的state一样
+dispatch：触发修改状态的函数，接收action对象
+reducer：纯函数，接收state和action，返回新state，不能直接修改原state
+initialState：初始状态
+*/
+```
+
+### 核心概念
+
+1. **action**：普通对象，必须带`type`字段标记动作类型；可选`payload`用来传递额外数据
+
+```
+type Action = {
+  type: string,
+  payload?: any
+}
+```
+
+2. **reducer 纯函数规则**
+
+- 输入相同，输出一定相同
+- **禁止直接修改旧 state**，必须返回全新对象
+- 不能写异步、定时器、请求等副作用（副作用交给 useEffect）
+
+### useReducer vs useState
+
+- useState：简单状态（单个数字 / 字符串），代码简短，日常简单组件首选
+- useReducer：**多个互相影响的状态**、状态更新逻辑多、多处修改同一个状态，逻辑集中好维护，大型组件更清晰
+
+### 完整最小示例
+
+```
+import { useReducer } from 'react'
+
+type CountState = { count: number }
+type CountAction = {type:'add'} | {type:'minus'}
+
+const countReducer = (state:CountState,action:CountAction)=>{
+  switch(action.type){
+    case 'add': return {count:state.count+1}
+    case 'minus': return {count:state.count-1}
+    default: return state
+  }
+}
+
+function Demo(){
+  const [state,dispatch] = useReducer(countReducer,{count:0})
+  return <>
+    <p>{state.count}</p>
+    <button onClick={()=>dispatch({type:'add'})}>+1</button>
+  </>
+}
+export default Demo
+```
+
+### 适用场景
+
+✅ 状态结构复杂（对象、数组，多个关联数据）
+✅ 状态更新逻辑很多，分散在多处
+✅ 需要统一管理状态变更，方便追溯状态变化
+
+### 踩坑笔记
+
+1. ❌ 不要直接修改 state，例如`state.count++`，不会触发页面更新
+2. ❌ reducer 内部不能写异步代码，异步请求写在 useEffect 里，请求完成再 dispatch
+3. ✅ 类型约束（TS）：一定要定义 State、Action 类型，避免类型错误
