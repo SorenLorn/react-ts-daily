@@ -470,3 +470,48 @@ function Child(){
   return <p>{ctx?.count}</p>
 }
 ```
+
+
+# Day10 useReducer
+## 核心概念
+useReducer 是React内置Hook，**用来管理复杂状态**。
+当状态更新逻辑多、多个操作修改同一个state时，比useState更清晰。
+- reducer：纯函数，固定格式 `(state, action)=>newState`
+- state：当前状态
+- dispatch：派发动作，触发reducer执行，**不能直接修改state**
+- action：对象，type是动作类型，payload是携带的数据（可选）
+
+## 基础语法
+```tsx
+const [state, dispatch] = useReducer(reducer, initialState)
+```
+
+## 什么时候选 useReducer
+
+✅ 状态有多种修改方式（加减、重置、批量修改）
+✅ 状态逻辑需要复用、抽离到组件外部
+❌ 简单单个数值状态，直接用 useState 更简单
+
+## 重点规则
+
+1. reducer 必须是**纯函数**：相同输入一定得到相同输出，不能写异步、不能修改入参 state
+2. 不直接改 state，必须返回全新 state 对象
+3. dispatch 只是触发更新，**不会立刻修改 state**，状态更新是异步
+
+## 最小示例
+
+```
+const reducer = (state, action) => {
+  if(action.type === 'add'){
+    return {count: state.count + 1}
+  }
+  return state
+}
+```
+
+## 常见踩坑
+
+1. 忘记返回新对象，直接修改 state → 页面不会刷新
+2. action.type 名字写错，大小写敏感，不会报错，状态无变化
+3. payload 漏传，读取 undefined 报错
+
