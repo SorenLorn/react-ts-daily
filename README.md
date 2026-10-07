@@ -515,3 +515,51 @@ const reducer = (state, action) => {
 2. action.type 名字写错，大小写敏感，不会报错，状态无变化
 3. payload 漏传，读取 undefined 报错
 
+
+
+# Day11 前沿TS语法 + React综合小Demo
+> 本案例整合：字面量联合类型、可选属性、readonly只读、类型推导、useMemo缓存，是React+TS项目高频组合写法
+
+### 1.字面量联合类型
+限制变量只能是指定的几个固定字符串，约束主题选项，避免随便传字符串
+```ts
+type Theme = 'light' | 'dark' | 'auto'
+```
+
+### 2.interface 接口属性修饰
+
+- `age?`：可选属性，对象可以不写 age 字段
+- `readonly id`：只读，初始化之后不能修改 id 的值
+
+```
+interface UserInfo {
+  name: string
+  age?: number
+  readonly id: number
+}
+```
+
+### 3.useState 显式类型标注
+
+当需要严格约束类型时，给 useState 传入泛型
+
+```
+const [theme, setTheme] = useState<Theme>('light')
+```
+
+### 4.useMemo 计算缓存
+
+只有依赖数组内的值变化，才会重新执行计算函数，减少重复计算，优化性能
+
+```
+const doubleCount = useMemo(() => {
+  return count * 2
+}, [count])
+```
+
+### 核心总结
+
+1. 联合字面量类型：约束固定可选值，减少代码错误
+2. readonly 只读属性：保护数据，防止意外修改
+3. useMemo：缓存耗时计算，减少不必要重计算
+4. 类型自动推导：TS 可以自动识别大部分变量类型，不用全部手动标注
