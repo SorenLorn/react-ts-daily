@@ -563,3 +563,40 @@ const doubleCount = useMemo(() => {
 2. readonly 只读属性：保护数据，防止意外修改
 3. useMemo：缓存耗时计算，减少不必要重计算
 4. 类型自动推导：TS 可以自动识别大部分变量类型，不用全部手动标注
+
+
+
+# Day12 - useReducer综合小demo（待办清单）
+## 知识点
+复用前面学过的：useState、useReducer、ts类型定义、数组展开、map/filter数组方法，**不新增任何新钩子/新语法**。
+适合状态多、有多种修改逻辑的场景，比如待办的【新增、勾选、删除】。
+
+### 核心概念
+useReducer：把所有状态修改逻辑抽离到外部reducer函数，统一管理状态变更，适合一套状态多种操作。
+- state：当前数据
+- action：动作对象，type区分操作类型，payload携带参数
+- reducer：纯函数，接收旧state和action，返回新state
+
+### 基础语法示例
+```tsx
+const [state, dispatch] = useReducer(reducer,初始值)
+// dispatch触发操作，传入action
+dispatch({type:"xxx", payload:数据})
+```
+
+### 项目逻辑说明
+
+1. TodoItem：ts 类型，定义单条待办的结构（id、文字、是否完成）
+2. TodoAction：约束所有支持的操作类型，类型校验
+3. todoReducer：纯函数，根据不同 type 返回全新数组，**不直接修改原 state**
+4. 输入框用 useState 保存输入内容
+5. 点击添加：非空校验，dispatch 添加待办
+6. 点击文字：切换完成状态
+7. 点击删除：过滤掉对应 id 的待办
+
+### 注意点
+
+1. 不能直接修改 state 数组，必须返回新数组
+2. payload 用来传递需要的数据（文本、id）
+3. Date.now () 简单生成唯一 id，适合小 demo
+4. 类型定义约束数据，防止写错字段
