@@ -600,3 +600,53 @@ dispatch({type:"xxx", payload:数据})
 2. payload 用来传递需要的数据（文本、id）
 3. Date.now () 简单生成唯一 id，适合小 demo
 4. 类型定义约束数据，防止写错字段
+
+
+# Day13 待办统计综合案例
+> 复习：useState、useMemo、TS接口类型、数组map/filter，无新语法
+
+## 核心知识点
+1. useState：维护2个状态，待办数组 + 输入框文本
+```ts
+const [todoList, setTodoList] = useState<TodoItem[]>([])
+const [inputVal, setInputVal] = useState("")
+```
+
+2. TS 接口定义对象结构，约束待办数据类型
+
+```
+interface TodoItem {
+  id: number
+  text: string
+  finished: boolean
+}
+```
+
+3. useMemo：缓存计算结果。只有 todoList 变化才重新计算统计数量，减少重复运算
+
+```
+const stats = useMemo(() => {
+  const total = todoList.length
+  const doneCount = todoList.filter(item => item.finished).length
+  return { total, doneCount }
+}, [todoList]) // 依赖数组：todoList更新才执行
+```
+
+4. 数组不可变更新（React 状态不能直接修改原数组）
+
+- 新增：`[...todoList, newItem]` 展开拷贝
+- 修改：`map` 返回新数组
+- 删除：`filter` 过滤返回新数组
+
+## 功能清单
+
+- 新增待办事项
+- 点击文字切换完成 / 未完成
+- 删除待办
+- 自动统计总数、已完成、未完成数量
+
+## 踩坑记录
+
+1. ❌ 不要直接 push 修改 todoList，会不触发页面更新
+2. ❌ useMemo 依赖数组必须写全用到的变量，否则会拿到旧数据
+3. ❌ key 要用唯一 id，不要直接用数组下标 index（列表增删容易 bug）
