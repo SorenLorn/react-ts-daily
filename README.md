@@ -650,3 +650,69 @@ const stats = useMemo(() => {
 1. ❌ 不要直接 push 修改 todoList，会不触发页面更新
 2. ❌ useMemo 依赖数组必须写全用到的变量，否则会拿到旧数据
 3. ❌ key 要用唯一 id，不要直接用数组下标 index（列表增删容易 bug）
+
+
+# Day14｜State不可变更新（对象、数组）
+> 核心规则：React state 不能直接原地修改！
+> 必须**拷贝旧数据，生成一份全新数据**，再setState覆盖。
+
+## 1. 对象类型state更新
+❌错误写法（原地修改，页面不会刷新）
+```ts
+// 直接修改原对象，不推荐
+user.age +=1
+setUser(user)
+```
+
+✅正确写法：展开`...`复制旧对象，重写需要修改字段
+
+```
+setUser(prev => ({
+  ...prev, // 复制原有全部属性
+  age: prev.age + 1 // 覆盖要改的属性
+}))
+```
+
+## 2. 数组类型 state 更新
+
+❌错误：push、splice 直接修改原数组（原地变更）
+✅正确：返回新数组
+
+- 新增：`[...oldArr, 新值]`
+- 删除：`oldArr.filter()`
+- 修改单项：`oldArr.map()`
+
+示例：
+
+```
+// 新增元素
+setUser(prev => ({
+  ...prev,
+  hobby: [...prev.hobby, "游戏"]
+}))
+
+// 删除元素
+setUser(prev => ({
+  ...prev,
+  hobby: prev.hobby.filter(item => item !== '看书')
+}))
+```
+
+## 3. 为什么不能直接改？
+
+React 对比 state 是**浅比较**。
+如果引用地址没变，React 认为数据没有变化，不会触发页面重新渲染。
+展开运算符会生成新对象 / 新数组，引用地址改变，组件更新。
+
+## 4. 常用数组不可变操作汇总
+
+```
+// 追加
+const newArr = [...arr, 'xxx']
+// 头部添加
+const newArr = ['xxx', ...arr]
+// 删除
+const newArr = arr.filter(item => item.id !== 1)
+// 修改某一项
+const newArr = arr.map(item => item.id ===1 ? {...item,name:"新名字"}:item)
+```
