@@ -716,3 +716,47 @@ const newArr = arr.filter(item => item.id !== 1)
 // 修改某一项
 const newArr = arr.map(item => item.id ===1 ? {...item,name:"新名字"}:item)
 ```
+
+# Day15 Immer库简化state不可变更新
+## 核心知识点
+React的state原则：**不可直接修改原始数据**，对象/数组更新必须创建新副本。
+如果数据嵌套很深，多层展开`...`会写得非常繁琐。
+Immer 库可以解决这个痛点：在produce函数内，直接修改草稿draft，immer自动生成新state。
+
+### 安装
+```bash
+npm i immer
+```
+
+### 基础语法
+
+```
+import { produce } from 'immer'
+// draft：草稿对象，可以直接修改，不会改动原始state
+const newState = produce(原始state, (draft)=>{
+  // 直接写修改逻辑
+  draft.xxx = 值
+})
+```
+
+### ✅ 对比：原生写法 vs Immer 写法
+
+```
+// 原生useState写法，多层对象要不断展开
+setUser({
+  ...user,
+  hobby: [...user.hobby, "画画"]
+})
+
+// Immer写法，简洁很多
+setUser(produce(draft=>{
+  draft.hobby.push("画画")
+}))
+```
+
+## 注意事项
+
+1. 只能在 produce 回调里面修改 draft，外面不要操作 draft
+2. 不是替换 React 底层规则，只是语法糖，底层依旧生成全新 state
+3. 适合：**嵌套对象、嵌套数组**的复杂 state；简单数据没必要引入 immer
+4. draft 只是代理草稿，修改 draft 不会改变原始 state
