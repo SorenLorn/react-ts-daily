@@ -760,3 +760,43 @@ setUser(produce(draft=>{
 2. 不是替换 React 底层规则，只是语法糖，底层依旧生成全新 state
 3. 适合：**嵌套对象、嵌套数组**的复杂 state；简单数据没必要引入 immer
 4. draft 只是代理草稿，修改 draft 不会改变原始 state
+
+
+# Day16 CustomHook 自定义钩子
+## 核心概念
+自定义Hook就是**把组件里重复的hook逻辑抽离出来复用**，本质就是普通函数。
+规则：
+1. 函数名必须以 use 开头（React识别为钩子）
+2. 内部可以调用 useState / useEffect 等原生hook
+3. 只能在组件、其他自定义Hook内调用，普通js函数不能用
+4. 每次组件渲染，自定义Hook都会重新执行
+
+## 基础写法示例
+```tsx
+// 自定义Hook
+function useXXX() {
+  const [state, setState] = useState()
+  // 逻辑...
+  return { state, setState }
+}
+```
+
+## 优势
+
+- 复用状态逻辑，不用复制粘贴代码
+- 分离 UI 和业务逻辑，代码更清爽
+- 多个组件调用同一个自定义 Hook，状态互相独立
+
+## 踩坑要点
+
+1. ❌ 不要在循环、条件判断里调用 hook（包括自定义 hook）
+2. ❌ 命名不加 use，React 不会检查 hook 规则
+3. ✅ 自定义 Hook 之间可以互相调用
+4. ✅ 返回的值可以是单个变量、对象、数组
+
+## 适用场景
+
+- 监听窗口大小、滚动事件
+- 表单输入封装
+- 接口请求封装
+- 计数器、定时器等通用状态逻辑
