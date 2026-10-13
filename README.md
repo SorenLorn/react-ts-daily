@@ -800,3 +800,93 @@ function useXXX() {
 - 表单输入封装
 - 接口请求封装
 - 计数器、定时器等通用状态逻辑
+
+
+# Day17 - Custom Hook useRequest 封装异步请求
+## ✅ 核心知识点
+1. 自定义Hook规范
+- 函数名称必须以 use 开头，这是React识别自定义Hook的规则
+- 自定义Hook内部可以使用React内置Hook（useState / useCallback / useEffect）
+- 作用：**复用组件逻辑**，不渲染UI，只抽离状态与行为，多个组件可以共用同一段逻辑
+
+2. useRequest 设计思路
+请求通用逻辑：开始请求 → 打开loading → 请求成功保存data，失败保存error → 结束loading
+提取公共状态：data、loading、error
+提取执行方法：run()，手动触发接口调用
+
+3. 类型设计（TS）
+使用泛型<T>，让Hook支持任意接口返回的数据类型，保证类型推导。
+```ts
+type UseRequestResult<T> = {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+  run: (...args: any[]) => Promise<void>;
+};
+```
+
+4. useCallback 作用
+run 是触发请求的函数，用 useCallback 缓存函数。
+不加 useCallback：组件每次重渲染，run 函数会变成全新引用。
+副作用依赖数组如果写了 run，会无限循环执行。
+5. try / catch / finally
+
+- try：请求成功，把返回数据存入 data
+- catch：捕获异常，存入 error 展示错误信息
+- finally：无论成功失败，都关闭 loading
+
+## 🧪 代码片段 + 注释
+
+```
+import { useState, useCallback } from 'react';
+
+// 泛型类型，T代表接口返回数据类型
+type UseRequestResult<T> = {
+  data: T | null;
+  loading: boolean;
+  error: Error | null;
+  run: (...args: any[]) => Promise<void>;
+};
+
+// 自定义请求Hook
+export function useRequest<T>(apiFunc: (...args: any[]) => Promise<T>): UseRequestResult<T> {
+  // 保存接口返回数据
+  const [data, setData] = useState<T | null>(null);
+  // loading加载状态
+  const [loading, setLoading] = useState(false);
+  // 错误对象
+  const [error, setError] = useState<Error | null>(null);
+
+  // useCallback缓存函数，避免重复创建
+  const run = useCallback(async (...args: any[]) => {
+    setLoading(true); // 开启加载
+    setError(null);   // 清空上次错误
+    try {
+      const res = await apiFunc(...args);
+      setData(res);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false); // 关闭加载
+    }
+  }, [apiFunc]);
+
+  return {
+    data,
+    loading,
+    error,
+    run
+  };
+}
+```
+
+## ⚠️ 踩坑记录
+
+1. 自定义 Hook 不能在普通函数、条件判断、循环内部调用，只能在组件或其他自定义 Hook 顶层调用。
+2. 异步请求不要忘记捕获异常，否则报错会直接抛到全局。
+3. 不使用 useCallback，传给 useEffect 时容易出现死循环。
+4. mock 模拟请求，要用 Promise+setTimeout 模拟网络延迟，方便本地调试。
+
+## 📌 适用场景
+
+项目中所有接口请求都可以复用这个 Hook，统一管理 loading、错误信息，不用每个组件重复写这套状态。
