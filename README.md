@@ -890,3 +890,55 @@ export function useRequest<T>(apiFunc: (...args: any[]) => Promise<T>): UseReque
 ## 📌 适用场景
 
 项目中所有接口请求都可以复用这个 Hook，统一管理 loading、错误信息，不用每个组件重复写这套状态。
+
+
+# Day18 - Custom Hook useLocalStorage 本地持久化存储
+## ✅ 核心知识点
+1. 自定义Hook复用本地存储逻辑
+localStorage 是浏览器本地存储，页面刷新数据不会丢失。
+每次读写localStorage的逻辑可以抽成自定义Hook，多个组件复用。
+
+2. useState 惰性初始化
+useState(()=>{}) 传入函数，只会**执行一次**，组件首次渲染读取本地存储，
+不要直接写 localStorage.getItem，否则每次组件渲染都会读取存储，浪费性能。
+```ts
+const [value, setValue] = useState<T>(() => {
+  const stored = localStorage.getItem(key)
+  return stored ? JSON.parse(stored) : defaultValue
+})
+```
+
+3. useEffect 同步更新
+当 value 发生变化，自动把最新数据存入 localStorage。
+依赖数组必须带上 key 和 value，保证依赖完整。
+
+```
+useEffect(() => {
+  localStorage.setItem(key, JSON.stringify(value))
+}, [key, value])
+```
+
+4. JSON 序列化与反序列化
+localStorage 只能存字符串。
+
+- 存：JSON.stringify () 对象 / 数组转字符串
+- 读：JSON.parse () 字符串转回 JS 数据类型
+简单字符串类型也建议统一序列化，保证接口统一。
+
+5. 异常捕获 try-catch
+如果本地存储的数据格式损坏，JSON.parse 会直接报错，
+加 try catch，解析失败直接返回默认值，防止页面崩溃。
+6. 封装 reset 方法
+useCallback 缓存重置函数，重置状态回到默认值。
+
+## ⚠️ 踩坑记录
+
+1. localStorage 只能存字符串，直接存对象会变成 [object Object]，必须序列化。
+2. 惰性初始化不要写异步代码。
+3. localStorage 是同步操作，大量读写会阻塞主线程。
+4. 隐私模式下部分浏览器可能禁用 localStorage，实际项目要做兜底判断。
+5. key 命名建议项目统一规范，防止多个项目 key 冲突覆盖数据。
+
+## 📌 适用场景
+
+保存用户表单草稿、主题切换、简单偏好设置、记住用户输入等轻量持久化需求。
