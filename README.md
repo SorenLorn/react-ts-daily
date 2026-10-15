@@ -942,3 +942,50 @@ useCallback 缓存重置函数，重置状态回到默认值。
 ## 📌 适用场景
 
 保存用户表单草稿、主题切换、简单偏好设置、记住用户输入等轻量持久化需求。
+
+
+# Day19 - React Router 基础路由
+## ✅ 核心知识点
+1. React Router 介绍
+react-router-dom 是 React 官方推荐前端路由库，实现单页应用SPA。
+SPA特点：页面跳转**不刷新浏览器**，只切换组件。
+> 安装命令：npm install react-router-dom
+
+2. 核心组件说明
+- BrowserRouter：路由根容器，包裹所有路由代码，基于history模式。
+- Routes：路由容器，内部放Route，只会渲染匹配成功的第一个路由。
+- Route：路由规则，path匹配地址，element渲染对应组件。
+- Link：导航标签，替代a标签，不会触发页面刷新。
+
+3. 编程式导航 useNavigate
+useNavigate 是路由Hook，代码里控制页面跳转。
+```ts
+const navigate = useNavigate()
+navigate('/about') // 跳转到对应路由
+// navigate(-1) 等价浏览器返回上一页
+```
+
+4. 404 兜底路由
+`path="*"` 匹配所有未定义地址，放 Routes 最后，做页面找不到兜底。
+
+## 🧪 小代码片段
+
+```
+// 声明式导航
+<Link to="/about">前往关于页</Link>
+
+// 编程式导航
+const navigate = useNavigate()
+<button onClick={()=>navigate('/')}>返回首页</button>
+```
+
+## ⚠️ 踩坑记录
+
+1. 所有路由相关组件，必须包裹在 BrowserRouter 内部，否则 Hook 报错。
+2. Routes 替代旧版本 Switch，不要继续写 Switch（v6 版本移除）。
+3. Link 的 to 属性必须写字符串，不要直接写变量不加处理。
+4. 路径匹配默认严格匹配：path="/" 只会匹配 `/`，不会匹配 `/about`。
+5. 部署到服务器时，history 模式路由刷新会 404，后端需要配置重定向。
+
+## 📌 适用场景
+单页应用页面跳转，后台管理系统、官网页面之间切换。
