@@ -989,3 +989,42 @@ const navigate = useNavigate()
 
 ## 📌 适用场景
 单页应用页面跳转，后台管理系统、官网页面之间切换。
+
+
+# Day20 - React Router 动态路由 & useParams
+## ✅ 核心知识点
+1. 动态路由概念
+路由路径里用 `:参数名` 定义动态路由，URL地址可变，比如 `/user/1001`、`/user/1002`
+适用于：详情页、文章页，不同id访问同一个组件。
+
+2. useParams Hook
+用于读取URL上的动态参数，返回一个对象，里面包含所有路由参数。
+```ts
+const params = useParams()
+console.log(params.id)
+```
+
+3. 两种跳转方式传递动态参数
+
+- 声明式导航 Link
+
+```
+<Link to={`/user/${id}`}>用户详情</Link>
+```
+
+- 编程式导航 useNavigate
+
+```
+navigate(`/user/${id}`)
+```
+
+## ⚠️ 踩坑记录
+
+1. useParams 拿到的值**永远是 string 类型**，就算传数字，获取后也是字符串，需要手动转 Number。
+2. 动态路由放 Routes 中顺序注意，写在通用路由前面，防止被 404 优先匹配。
+3. 参数名要和路由定义 `:id` 保持一致，大小写敏感。
+4. 路由参数为空时，对应属性值为 undefined，要做判断避免报错。
+
+## 📌 适用场景
+
+商品详情、用户详情、博客文章详情页面。
