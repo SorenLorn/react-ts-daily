@@ -1073,3 +1073,22 @@ const Layout = () => {
 - 忘记写`<Outlet />`：父布局正常渲染，子页面空白不显示。
 - 子路由path写 `/info`：变成根路由，嵌套失效。
 - index路由错误添加path属性，会直接报错。
+
+# Day22 - react-router useSearchParams 查询参数
+
+1. useSearchParams 用于读取 / 修改 URL 中的 search 查询字符串，也就是`?key=value`这类参数。
+
+```
+// 获取和修改方法
+const [searchParams, setSearchParams] = useSearchParams()
+// 获取参数
+searchParams.get('keyword')
+// 改写url参数，不会刷新页面
+setSearchParams({keyword: 'xxx'})
+```
+
+2. 特点：参数展示在地址栏，刷新页面参数依旧保留。
+3. 参数获取结果可能为 null，渲染时建议做空值判断，参数为空时，对应属性值为 undefined，要做判断避免报错。
+
+## 📌 适用场景
+搜索页面筛选、分页参数传递、筛选条件保存。
