@@ -1092,3 +1092,34 @@ setSearchParams({keyword: 'xxx'})
 
 ## 📌 适用场景
 搜索页面筛选、分页参数传递、筛选条件保存。
+
+
+# Day23 react-router RouteGuard
+1. 路由守卫作用：对页面访问做权限拦截，未登录用户禁止进入受保护页面，直接跳转登录页。
+2. `<Outlet />`：渲染嵌套子路由，放在守卫内，所有子路由都会先走权限校验。
+3. `<Navigate />`：ReactRouter 内置重定向组件
+   - `to`：目标跳转地址
+   - `replace`：替换当前历史记录，返回按钮不会跳回被拦截页面。
+
+### 小代码片段
+
+```
+// 模拟登录设置token
+const handleLogin = () => {
+  localStorage.setItem('token', 'user123')
+}
+// 退出登录清除token
+const handleLogout = () => {
+  localStorage.removeItem('token')
+}
+```
+
+### 踩坑记录
+
+1. 不要用 `push` 跳转，会新增历史记录，用户点返回会再次进入守卫页面，推荐 `replace`。
+2. 守卫必须放在路由配置中作为 `element`，不能直接写在页面组件内部。
+3. localStorage 存储 token 仅用于前端页面拦截，**不能作为后端安全校验**，后端接口依旧要校验身份。
+
+### 拓展思路
+
+可以扩展角色权限判断，比如管理员才能访问 `/admin`，在守卫中增加角色判断逻辑。
